@@ -16,10 +16,12 @@ var (
 	modkernel32 = windows.NewLazySystemDLL("kernel32.dll")
 	modsetupapi = windows.NewLazySystemDLL("setupapi.dll")
 
-	procRegEnumValueW                     = modadvapi32.NewProc("RegEnumValueW")
-	procGetCommState                      = modkernel32.NewProc("GetCommState")
-	procSetCommState                      = modkernel32.NewProc("SetCommState")
-	procSetCommTimeouts                   = modkernel32.NewProc("SetCommTimeouts")
+	procRegEnumValueW      = modadvapi32.NewProc("RegEnumValueW")
+	procGetCommState       = modkernel32.NewProc("GetCommState")
+	procSetCommState       = modkernel32.NewProc("SetCommState")
+	procSetCommTimeouts    = modkernel32.NewProc("SetCommTimeouts")
+	procEscapeCommFunction = modkernel32.NewProc("EscapeCommFunction")
+
 	procSetupDiClassGuidsFromNameW        = modsetupapi.NewProc("SetupDiClassGuidsFromNameW")
 	procSetupDiGetClassDevsW              = modsetupapi.NewProc("SetupDiGetClassDevsW")
 	procSetupDiDestroyDeviceInfoList      = modsetupapi.NewProc("SetupDiDestroyDeviceInfoList")
@@ -63,6 +65,22 @@ func setCommState(handle syscall.Handle, dcb *dcb) (err error) {
 
 func setCommTimeouts(handle syscall.Handle, timeouts *commTimeouts) (err error) {
 	r1, _, e1 := syscall.Syscall(procSetCommTimeouts.Addr(), 2, uintptr(handle), uintptr(unsafe.Pointer(timeouts)), 0)
+	if r1 == 0 {
+		if e1 != 0 {
+			err = error(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func escapeCommFunction(handle syscall.Handle, command uint32) (err error) {
+	r1, _, e1 := syscall.Syscall(procEscapeCommFunction.Addr(),
+		2,
+		uintptr(handle),
+		uintptr(command),
+		0)
 	if r1 == 0 {
 		if e1 != 0 {
 			err = error(e1)

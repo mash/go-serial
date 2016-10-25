@@ -24,6 +24,8 @@ type Port interface {
 
 	// Close the serial port
 	Close() error
+
+	SetDTR(b bool) error
 }
 
 // Open opens the serial port using the specified modes

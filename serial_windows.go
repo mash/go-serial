@@ -211,6 +211,16 @@ func (port *windowsPort) SetMode(mode *Mode) error {
 	return nil
 }
 
+func (port *windowsPort) SetDTR(d bool) error {
+	var dwFunc uint32
+	if d {
+		dwFunc = 5 // SETDTR
+	} else {
+		dwFunc = 6 // CLRDTR
+	}
+	return escapeCommFunction(port.handle, dwFunc)
+}
+
 func nativeOpen(portName string, mode *Mode) (*windowsPort, error) {
 	portName = "\\\\.\\" + portName
 	path, err := syscall.UTF16PtrFromString(portName)
