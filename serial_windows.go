@@ -61,25 +61,15 @@ func (port *windowsPort) Close() error {
 	return syscall.CloseHandle(port.handle)
 }
 
+// Blocking Read
 func (port *windowsPort) Read(p []byte) (int, error) {
 	var readed uint32
-	params := &dcb{}
 	for {
 		if err := syscall.ReadFile(port.handle, p, &readed, nil); err != nil {
 			return int(readed), err
 		}
 		if readed > 0 {
 			return int(readed), nil
-		}
-
-		// At the moment it seems that the only reliable way to check if
-		// a serial port is alive in Windows is to check if the SetCommState
-		// function fails.
-
-		getCommState(port.handle, params)
-		if err := setCommState(port.handle, params); err != nil {
-			port.Close()
-			return 0, err
 		}
 	}
 }
