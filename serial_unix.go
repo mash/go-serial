@@ -6,7 +6,7 @@
 
 // +build linux darwin freebsd
 
-package serial // import "go.bug.st/serial.v1"
+package serial
 
 import "io/ioutil"
 import "regexp"
@@ -49,6 +49,10 @@ func (port *unixPort) SetMode(mode *Mode) error {
 		return err
 	}
 	return port.setTermSettings(settings)
+}
+
+func (port *unixPort) SetDTR(d bool) error {
+	return &PortError{code: FunctionNotImplemented}
 }
 
 func nativeOpen(portName string, mode *Mode) (*unixPort, error) {
